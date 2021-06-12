@@ -31,7 +31,7 @@ func (s Server) Run() error {
 	http.HandleFunc("/start", startGameHandler)
 	http.HandleFunc("/move", moveHandler)
 	http.HandleFunc("/end", endGameHandler)
-  fmt.Println(s)
+	fmt.Println(s)
 	return http.ListenAndServe(fmt.Sprintf("%s:%d", s.Host, s.Port), nil)
 }
 

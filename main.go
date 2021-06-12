@@ -1,9 +1,8 @@
 package main
 
 import (
-	"log"
-
 	"github.com/jmbaur/battlesnake/server"
+	"log"
 )
 
 func main() {
