@@ -97,26 +97,75 @@ func End(data []byte) {
 	}
 	snakeChan <- nil
 	defer close(snakeChan)
-	fmt.Printf("deleting snake %s\n", s.Game.ID)
+	fmt.Printf("deleting game %s\n", s.Game.ID)
 	delete(runningGames, s.Game.ID)
 	fmt.Printf("snakes left: %+v\n", runningGames)
 }
 
 func runSnake(c chan []byte, initialState *state) {
+	printBoard(*initialState)
+
 loop:
 	for {
 		switch msg := <-c; msg {
 		case nil:
-			fmt.Printf("Snake ended")
+			fmt.Println("Snake ended")
 			break loop
 		default:
 			s, err := getGameState(msg)
+			printBoard(*s)
 			if err != nil {
 				log.Println(err)
 			}
+			// spew.Dump(s)
 			fmt.Printf("%s got request to make move decision\n", s.You.Name)
 			c <- []byte(Up)
 			fmt.Printf("%s made decision\n", s.You.Name)
 		}
 	}
+}
+
+func printBoard(s state) {
+	board := [][]string{}
+
+	// Set empty board.
+	h := s.Board.Height
+	w := s.Board.Width
+	for i := 0; i < h; i++ {
+		board = append(board, []string{})
+		for j := 0; j < w; j++ {
+			board[i] = append(board[i], "-")
+		}
+	}
+
+	// Place snakes on board
+	for i, snake := range s.Board.Snakes {
+		snakeChar := string(rune(i + 65))
+		fmt.Printf("%s: %+v\n", snakeChar, snake.Body)
+		for _, coord := range snake.Body {
+			board[coord.Y][coord.X] = snakeChar
+		}
+	}
+
+	// Place food on board
+	foodChar := "f"
+	for _, coord := range s.Board.Food {
+		board[coord.Y][coord.X] = foodChar
+	}
+
+	// Place hazards on board
+	hazardChar := "h"
+	for _, coord := range s.Board.Hazards {
+		board[coord.Y][coord.X] = hazardChar
+	}
+
+	// Print board contents.
+	for i := h - 1; i > 0; i-- {
+		fmt.Printf(" ")
+		for j := 0; j < w; j++ {
+			fmt.Printf("%s ", board[i][j])
+		}
+		fmt.Printf("\n")
+	}
+	fmt.Printf("\n")
 }
