@@ -3,10 +3,11 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/jmbaur/battlesnake/game"
 )
 
 const (
@@ -31,7 +32,7 @@ func (s Server) Run() error {
 	http.HandleFunc("/start", startGameHandler)
 	http.HandleFunc("/move", moveHandler)
 	http.HandleFunc("/end", endGameHandler)
-	fmt.Println(s)
+	fmt.Print(s)
 	return http.ListenAndServe(fmt.Sprintf("%s:%d", s.Host, s.Port), nil)
 }
 
@@ -62,62 +63,15 @@ func getBattlesnakeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-// Snake is a representation of a battlesnake mid-game.
-type Snake struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
-	Health int    `json:"health"`
-	Body   []struct {
-		X int `json:"x"`
-		Y int `json:"y"`
-	} `json:"body"`
-	Latency string `json:"latency"`
-	Head    struct {
-		X int `json:"x"`
-		Y int `json:"y"`
-	} `json:"head"`
-	Length int    `json:"length"`
-	Shout  string `json:"shout"`
-	Squad  string `json:"squad"`
-}
-
-// GameState is received on the start of a new game and for each move request.
-// TODO: potentially split out this struct?
-type GameState struct {
-	Game struct {
-		ID      string `json:"id"`
-		RuleSet struct {
-			Name    string `json:"name"`
-			Version string `json:"version"`
-		} `json:"rule_set"`
-		Timeout int `json:"timeout"` // in milliseconds
-	} `json:"game"`
-	Turn  int `json:"turn"`
-	Board struct {
-		Height int `json:"height"`
-		Width  int `json:"width"`
-		Food   []struct {
-			X int `json:"x"`
-			Y int `json:"y"`
-		} `json:"food"`
-		Hazards []struct {
-			X int `json:"x"`
-			Y int `json:"y"`
-		} `json:"hazards"`
-		Snakes []Snake `json:"snakes"`
-	} `json:"board"`
-	You Snake `json:"you"`
-}
-
 func startGameHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := getGameState(r.Body)
+	defer r.Body.Close()
+	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Println(err)
 	}
-	r.Body.Close()
 
 	w.WriteHeader(http.StatusOK)
-	// TODO: initialize game state
+	game.Start(data)
 }
 
 // MoveResponse is sent on each move request.
@@ -127,16 +81,15 @@ type MoveResponse struct {
 }
 
 func moveHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := getGameState(r.Body)
+	defer r.Body.Close()
+	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Println(err)
+		// TODO: what should we do here?
 	}
-	r.Body.Close()
 
-	// TODO: decide move
-
-	data, err := json.Marshal(MoveResponse{
-		Move:  "up",
+	data, err = json.Marshal(MoveResponse{
+		Move:  game.Decide(data),
 		Shout: "hello, world",
 	})
 	if err != nil {
@@ -148,24 +101,12 @@ func moveHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func endGameHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := getGameState(r.Body)
+	defer r.Body.Close()
+	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Println(err)
 	}
-	r.Body.Close()
 
-	// TODO: deallocate resources
 	w.WriteHeader(http.StatusOK)
-}
-
-func getGameState(reader io.Reader) (*GameState, error) {
-	data, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get data from request body: %v", err)
-	}
-	var state GameState
-	if err := json.Unmarshal(data, &state); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal start game data: %v", err)
-	}
-	return &state, nil
+	game.End(data)
 }
