@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
-
-	"github.com/rs/zerolog/log"
 
 	"github.com/jmbaur/battlesnake/game"
 )
@@ -68,7 +67,7 @@ func startGameHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Error().Err(err).Send()
+		log.Println(err)
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -85,7 +84,7 @@ func moveHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Error().Err(err).Send()
+		log.Println(err)
 		// TODO: what should we do here?
 	}
 
@@ -94,7 +93,7 @@ func moveHandler(w http.ResponseWriter, r *http.Request) {
 		Shout: "hello, world",
 	})
 	if err != nil {
-		log.Error().Err(err).Send()
+		log.Println(err)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -105,7 +104,7 @@ func endGameHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Error().Err(err).Send()
+		log.Println(err)
 	}
 
 	w.WriteHeader(http.StatusOK)
