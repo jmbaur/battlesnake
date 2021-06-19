@@ -32,24 +32,30 @@ type snake struct {
 	Squad   string       `json:"squad"`
 }
 
+type ruleset struct {
+	Name    string `json:"name"`
+	Version string `json:"version"`
+}
+
+type game struct {
+	ID      string  `json:"id"`
+	RuleSet ruleset `json:"ruleset"`
+	Timeout int     `json:"timeout"` // in milliseconds
+}
+
+type board struct {
+	Height  int          `json:"height"`
+	Width   int          `json:"width"`
+	Food    []coordinate `json:"food"`
+	Hazards []coordinate `json:"hazards"`
+	Snakes  []snake      `json:"snakes"`
+}
+
 type state struct {
-	Game struct {
-		ID      string `json:"id"`
-		RuleSet struct {
-			Name    string `json:"name"`
-			Version string `json:"version"`
-		} `json:"ruleset"`
-		Timeout int `json:"timeout"` // in milliseconds
-	} `json:"game"`
-	Turn  int `json:"turn"`
-	Board struct {
-		Height  int          `json:"height"`
-		Width   int          `json:"width"`
-		Food    []coordinate `json:"food"`
-		Hazards []coordinate `json:"hazards"`
-		Snakes  []snake      `json:"snakes"`
-	} `json:"board"`
-	You snake `json:"you"`
+	Game  game  `json:"game"`
+	Turn  int   `json:"turn"`
+	Board board `json:"board"`
+	You   snake `json:"you"`
 }
 
 func getGameState(data []byte) (*state, error) {
