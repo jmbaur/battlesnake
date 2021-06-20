@@ -124,21 +124,22 @@ loop:
 			}
 			log.Printf("%s got request to make move decision\n", s.You.Name)
 
-			var direction string
-			switch {
-			case canMoveDirection(s, Up):
-				direction = Up
-			case canMoveDirection(s, Down):
-				direction = Down
-			case canMoveDirection(s, Right):
-				direction = Right
-			case canMoveDirection(s, Left):
-				direction = Left
-			default:
-				log.Println("could not make decision on where to move")
-				// TODO: does the game engine have some default value? (e.g. move the
-				// same direction as last move)
+			var directions []string
+			for _, d := range []string{Up, Down, Right, Left} {
+				if canMoveDirection(s, d) {
+					directions = append(directions, d)
+				}
 			}
+
+			var direction string
+
+			if s.You.Health < (s.Board.Height+s.Board.Width)/2 {
+				food, err := closestFood(s)
+				if err != ErrNoFood {
+					direction = desiredDirection(s.You.Head, *food)
+				}
+			}
+
 			c <- []byte(direction)
 
 			log.Printf("%s is going %s\n", s.You.Name, direction)

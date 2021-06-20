@@ -2,13 +2,13 @@ package game
 
 import (
 	"errors"
-	"fmt"
 	"math"
 )
 
 func canMoveDirection(s *state, direction string) bool {
 	x := s.You.Head.X
 	y := s.You.Head.Y
+	health := s.You.Health
 
 	// check for collision with board walls
 	if (direction == Up && y+1 >= s.Board.Height) ||
@@ -20,12 +20,37 @@ func canMoveDirection(s *state, direction string) bool {
 
 	// check for collision with any snakes
 	for _, snake := range s.Board.Snakes {
+		canHeadButt := health > snake.Health
 		for _, segment := range snake.Body {
-			if (direction == Up && y+1 == segment.Y && x == segment.X) ||
-				(direction == Down && y-1 == segment.Y && x == segment.X) ||
-				(direction == Right && x+1 == segment.X && y == segment.Y) ||
-				(direction == Left && x-1 == segment.X && y == segment.Y) {
-				return false
+			switch direction {
+			case Up:
+				if canHeadButt && x == snake.Head.X && y+1 == snake.Head.Y {
+					return true
+				}
+				if y+1 == segment.Y && x == segment.X {
+					return false
+				}
+			case Down:
+				if canHeadButt && x == snake.Head.X && y-1 == snake.Head.Y {
+					return true
+				}
+				if y-1 == segment.Y && x == segment.X {
+					return false
+				}
+			case Right:
+				if canHeadButt && x+1 == snake.Head.X && y == snake.Head.Y {
+					return true
+				}
+				if x+1 == segment.X && y == segment.Y {
+					return false
+				}
+			case Left:
+				if canHeadButt && x-1 == snake.Head.X && y == snake.Head.Y {
+					return true
+				}
+				if x-1 == segment.X && y == segment.Y {
+					return false
+				}
 			}
 		}
 	}
@@ -53,4 +78,8 @@ func closestFood(s *state) (*coordinate, error) {
 		}
 	}
 	return &lowestCoords, nil
+}
+
+func desiredDirection(a, b coordinate) string {
+	return "TODO"
 }
