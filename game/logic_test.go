@@ -1,6 +1,9 @@
 package game
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestCanMoveDirections(t *testing.T) {
 	tt := []struct {
@@ -74,16 +77,53 @@ func TestClosestFood(t *testing.T) {
 	}
 }
 
-func TestDesiredDirection(t *testing.T) {
+func TestDFS(t *testing.T) {
 	tt := []struct {
 		name   string
-		a      coordinate
-		b      coordinate
-		expect string
-	}{}
+		g      *graph
+		start  coordinate
+		end    coordinate
+		expect bool
+	}{
+		{
+			name: "",
+			g: &graph{cells: [][]cell{
+				{
+					{visited: false, visitable: true},
+					{visited: false, visitable: false},
+					{visited: false, visitable: true},
+					{visited: false, visitable: true},
+				},
+				{
+					{visited: false, visitable: true},
+					{visited: false, visitable: true},
+					{visited: false, visitable: true},
+					{visited: false, visitable: true},
+				},
+				{
+					{visited: false, visitable: true},
+					{visited: false, visitable: false},
+					{visited: false, visitable: false},
+					{visited: false, visitable: false},
+				},
+				{
+					{visited: false, visitable: true},
+					{visited: false, visitable: true},
+					{visited: false, visitable: true},
+					{visited: false, visitable: true},
+				},
+			},
+				height: 4, width: 4},
+			start:  coordinate{X: 0, Y: 0},
+			end:    coordinate{X: 3, Y: 1},
+			expect: true,
+		},
+	}
 
 	for _, tc := range tt {
-		if got := desiredDirection(tc.a, tc.b); got != tc.expect {
+		t.Fail()
+		fmt.Println(tc.g)
+		if got := dfs(tc.g, tc.start, tc.end); got != tc.expect {
 			t.Errorf("Test %s: got %+v, expected %+v\n", tc.name, got, tc.expect)
 		}
 	}

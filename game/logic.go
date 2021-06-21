@@ -2,6 +2,7 @@ package game
 
 import (
 	"errors"
+	"fmt"
 	"math"
 )
 
@@ -82,4 +83,42 @@ func closestFood(s *state) (*coordinate, error) {
 
 func desiredDirection(a, b coordinate) string {
 	return "TODO"
+}
+
+func (g *graph) traversableNeighbors(coord coordinate) []coordinate {
+	var coords []coordinate
+	if g.height > coord.Y+1 && g.cells[coord.Y+1][coord.X].visitable {
+		coords = append(coords, coordinate{coord.X, coord.Y + 1})
+	}
+	if g.width > coord.X+1 && g.cells[coord.Y][coord.X+1].visitable {
+		coords = append(coords, coordinate{coord.X + 1, coord.Y})
+	}
+	if coord.Y-1 >= 0 && g.cells[coord.Y-1][coord.X].visitable {
+		coords = append(coords, coordinate{coord.X, coord.Y - 1})
+	}
+	if coord.X-1 >= 0 && g.cells[coord.Y][coord.X-1].visitable {
+		coords = append(coords, coordinate{coord.X - 1, coord.Y})
+	}
+	fmt.Println(coords)
+	return coords
+}
+
+func dfs(g *graph, start, end coordinate) bool {
+	x := start.X
+	y := start.Y
+	fmt.Println(x, y)
+
+	if x == end.X && y == end.Y {
+		return true
+	}
+
+	g.cells[y][x].visited = true
+
+	for _, coord := range g.traversableNeighbors(start) {
+		if !g.cells[coord.Y][coord.X].visited && dfs(g, coord, end) {
+			return true
+		}
+	}
+
+	return false
 }

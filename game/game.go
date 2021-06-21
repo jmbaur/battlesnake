@@ -146,3 +146,84 @@ loop:
 		}
 	}
 }
+
+type cell struct {
+	visited   bool
+	visitable bool
+	kind      int
+}
+
+// Kinds of cells.
+const (
+	emptyCell = iota
+	headCell
+	bodyCell
+	foodCell
+)
+
+type graph struct {
+	cells  [][]cell
+	height int
+	width  int
+}
+
+func stateToGraph(s *state) *graph {
+	var g graph
+
+	g.height = s.Board.Height
+	g.width = s.Board.Width
+
+	for h := 0; h <= s.Board.Height; h++ {
+		g.cells = append(g.cells, []cell{})
+		for w := 0; w <= s.Board.Width; w++ {
+			g.cells[h] = append(g.cells[h], cell{visitable: true})
+		}
+	}
+
+	for _, snake := range s.Board.Snakes {
+		for _, segment := range snake.Body {
+			g.cells[segment.Y][segment.X].visitable = false
+			g.cells[segment.Y][segment.X].kind = bodyCell
+		}
+		g.cells[snake.Head.Y][snake.Head.X].visitable = false
+		g.cells[snake.Head.Y][snake.Head.X].kind = headCell
+	}
+
+	for _, food := range s.Board.Food {
+		g.cells[food.Y][food.X].visitable = true
+		g.cells[food.Y][food.X].kind = foodCell
+	}
+
+	return &g
+}
+
+func (g *graph) String() string {
+	var pp string
+	pp += "\n"
+
+	for i := g.height - 1; i >= 0; i-- {
+		pp += " "
+		for j := 0; j < g.width; j++ {
+			var char string
+			switch g.cells[i][j].kind {
+			case headCell:
+				char = "S"
+			case bodyCell:
+				char = "s"
+			case foodCell:
+				char = "f"
+			default:
+				if g.cells[i][j].visitable {
+					char = "+"
+				} else {
+					char = "-"
+				}
+			}
+			pp += char + " "
+		}
+		pp += "\n"
+	}
+	pp += "\n"
+
+	return pp
+}
