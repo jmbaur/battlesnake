@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -90,12 +89,6 @@ func TestDFS(t *testing.T) {
 			g: &graph{cells: [][]cell{
 				{
 					{visited: false, visitable: true},
-					{visited: false, visitable: false},
-					{visited: false, visitable: true},
-					{visited: false, visitable: true},
-				},
-				{
-					{visited: false, visitable: true},
 					{visited: false, visitable: true},
 					{visited: false, visitable: true},
 					{visited: false, visitable: true},
@@ -103,14 +96,20 @@ func TestDFS(t *testing.T) {
 				{
 					{visited: false, visitable: true},
 					{visited: false, visitable: false},
+					{visited: false, visitable: true},
+					{visited: false, visitable: true},
+				},
+				{
+					{visited: false, visitable: true},
 					{visited: false, visitable: false},
+					{visited: false, visitable: true},
 					{visited: false, visitable: false},
 				},
 				{
 					{visited: false, visitable: true},
+					{visited: false, visitable: false},
 					{visited: false, visitable: true},
-					{visited: false, visitable: true},
-					{visited: false, visitable: true},
+					{visited: false, visitable: false},
 				},
 			},
 				height: 4, width: 4},
@@ -121,9 +120,7 @@ func TestDFS(t *testing.T) {
 	}
 
 	for _, tc := range tt {
-		t.Fail()
-		fmt.Println(tc.g)
-		if got := dfs(tc.g, tc.start, tc.end); got != tc.expect {
+		if got := dfs(tc.g, tc.start, tc.end, &[]coordinate{}); got != tc.expect {
 			t.Errorf("Test %s: got %+v, expected %+v\n", tc.name, got, tc.expect)
 		}
 	}

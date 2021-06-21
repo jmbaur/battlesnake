@@ -2,7 +2,6 @@ package game
 
 import (
 	"errors"
-	"fmt"
 	"math"
 )
 
@@ -99,23 +98,24 @@ func (g *graph) traversableNeighbors(coord coordinate) []coordinate {
 	if coord.X-1 >= 0 && g.cells[coord.Y][coord.X-1].visitable {
 		coords = append(coords, coordinate{coord.X - 1, coord.Y})
 	}
-	fmt.Println(coords)
+
 	return coords
 }
 
-func dfs(g *graph, start, end coordinate) bool {
+func dfs(g *graph, start, end coordinate, path *[]coordinate) bool {
 	x := start.X
 	y := start.Y
-	fmt.Println(x, y)
 
 	if x == end.X && y == end.Y {
+		*path = append(*path, start)
 		return true
 	}
 
 	g.cells[y][x].visited = true
 
 	for _, coord := range g.traversableNeighbors(start) {
-		if !g.cells[coord.Y][coord.X].visited && dfs(g, coord, end) {
+		if !g.cells[coord.Y][coord.X].visited && dfs(g, coord, end, path) {
+			*path = append(*path, start)
 			return true
 		}
 	}
