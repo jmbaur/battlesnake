@@ -66,86 +66,31 @@ func getGameState(data []byte) (*state, error) {
 	return &s, nil
 }
 
-func Start(data []byte) {
-	s, err := getGameState(data)
-	if err != nil {
-		log.Println(err)
-	}
-
-	snakeChan := make(chan []byte)
-	runningGames[s.Game.ID] = snakeChan
-
-	go runSnake(snakeChan, s)
-}
+func Start(data []byte) {}
 
 func Decide(data []byte) string {
 	s, err := getGameState(data)
 	if err != nil {
 		log.Println(err)
 	}
-	snakeChan, ok := runningGames[s.Game.ID]
-	if !ok {
-		log.Printf("Could not find game with ID '%s'\n", s.Game.ID)
-	}
 
-	snakeChan <- data
-	return string(<-snakeChan)
-}
+	g := stateToGraph(s)
+	food, err := closestFood(s)
+	if err == ErrNoFood {
+		// TODO: decide where to move (avoid other snakes?)
+	} else {
+		path := []coordinate{}
+		pathToFoodExists := dfs(g, s.You.Head, *food, &path)
+		if pathToFoodExists {
 
-func End(data []byte) {
-	s, err := getGameState(data)
-	if err != nil {
-		log.Println(err)
-		log.Printf("%s\n", data)
-	}
-	snakeChan, ok := runningGames[s.Game.ID]
-	if !ok {
-		log.Printf("Could not find game with ID '%s'\n", s.Game.ID)
-	}
-	snakeChan <- nil
-	defer close(snakeChan)
-	log.Printf("deleting game %s\n", s.Game.ID)
-	delete(runningGames, s.Game.ID)
-	log.Printf("snakes left: %+v\n", runningGames)
-}
-
-func runSnake(c chan []byte, initialState *state) {
-loop:
-	for {
-		switch msg := <-c; msg {
-		case nil:
-			log.Println("Snake ended")
-			break loop
-		default:
-			s, err := getGameState(msg)
-			printBoard(*s)
-			if err != nil {
-				log.Println(err)
-			}
-			log.Printf("%s got request to make move decision\n", s.You.Name)
-
-			var directions []string
-			for _, d := range []string{Up, Down, Right, Left} {
-				if canMoveDirection(s, d) {
-					directions = append(directions, d)
-				}
-			}
-
-			var direction string
-
-			if s.You.Health < (s.Board.Height+s.Board.Width)/2 {
-				food, err := closestFood(s)
-				if err != ErrNoFood {
-					direction = desiredDirection(s.You.Head, *food)
-				}
-			}
-
-			c <- []byte(direction)
-
-			log.Printf("%s is going %s\n", s.You.Name, direction)
+		} else {
 		}
 	}
+
+	return Up // TODO: don't do this
 }
+
+func End(data []byte) {}
 
 type cell struct {
 	visited   bool
